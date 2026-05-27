@@ -70,12 +70,15 @@ export function InputBar({ onSubmit, disabled }: Props) {
     if (!textarea) return;
 
     handleContentChange(textarea.plainText);
-  }, []);
+  }, [handleContentChange]);
 
-  const handleCommandExecute = useCallback((index: number) => {
-    const command = resolveCommand(index);
-    handleCommand(command);
-  }, []);
+  const handleCommandExecute = useCallback(
+    (index: number) => {
+      const command = resolveCommand(index);
+      handleCommand(command);
+    },
+    [resolveCommand, handleCommand],
+  );
 
   useEffect(() => {
     const textarea = textAreaRef.current;
