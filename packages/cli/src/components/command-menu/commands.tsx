@@ -37,7 +37,7 @@ export const COMMANDS: Command[] = [
     value: "/signout",
   },
   {
-    name: "upgradde",
+    name: "upgrade",
     description: "Buy more credits",
     value: "/upgrade",
   },
