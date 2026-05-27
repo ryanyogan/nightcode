@@ -105,7 +105,6 @@ function Toast({ currentToast }: ToastProps) {
       backgroundColor="#1a1a24"
       borderColor={borderColor}
       border={["left", "right"]}
-      //TODO: add split border
     >
       <box flexDirection="column" gap={1} width="100%">
         <text fg="#e1e1e1" wrapMode="word" width="100%">
