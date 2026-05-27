@@ -5,26 +5,51 @@ export const COMMANDS: Command[] = [
     name: "new",
     description: "Start a new conversation",
     value: "/new",
+    action: (ctx) => {
+      ctx.toast.show({
+        message: "Starting new conversation...",
+      });
+    },
   },
   {
     name: "agents",
     description: "Switch agents",
     value: "/agents",
+    action: (ctx) => {
+      ctx.toast.show({
+        message: "Change agents",
+      });
+    },
   },
   {
     name: "models",
     description: "Select AI model for generation",
     value: "/models",
+    action: (ctx) => {
+      ctx.toast.show({
+        message: "Change models",
+      });
+    },
   },
   {
     name: "session",
     description: "Browse past sessions",
     value: "/sessions",
+    action: (ctx) => {
+      ctx.toast.show({
+        message: "Starting new conversation...",
+      });
+    },
   },
   {
     name: "theme",
     description: "Set a new theme",
     value: "/themes",
+    action: (ctx) => {
+      ctx.toast.show({
+        message: "Set a theme",
+      });
+    },
   },
   {
     name: "login",
