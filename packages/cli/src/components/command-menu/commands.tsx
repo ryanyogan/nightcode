@@ -16,8 +16,9 @@ export const COMMANDS: Command[] = [
     description: "Switch agents",
     value: "/agents",
     action: (ctx) => {
-      ctx.toast.show({
-        message: "Change agents",
+      ctx.dialog.open({
+        title: "Select Mode",
+        children: <text>Agent selection coming soon.</text>,
       });
     },
   },
