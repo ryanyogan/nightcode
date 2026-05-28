@@ -27,8 +27,9 @@ export const COMMANDS: Command[] = [
     description: "Select AI model for generation",
     value: "/models",
     action: (ctx) => {
-      ctx.toast.show({
-        message: "Change models",
+      ctx.dialog.open({
+        title: "Select Model",
+        children: <text>Model selection coming soon.</text>,
       });
     },
   },
