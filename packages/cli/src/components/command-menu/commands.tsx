@@ -1,3 +1,4 @@
+import { ThemeDialogContent } from "../dialogs/theme-dialog";
 import type { Command } from "./types";
 
 export const COMMANDS: Command[] = [
@@ -48,8 +49,9 @@ export const COMMANDS: Command[] = [
     description: "Set a new theme",
     value: "/themes",
     action: (ctx) => {
-      ctx.toast.show({
-        message: "Set a theme",
+      ctx.dialog.open({
+        title: "Select Theme",
+        children: <ThemeDialogContent />,
       });
     },
   },
