@@ -5,6 +5,13 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:cli": "bun run --watch packages/cli/src/index.tsx"
+    "dev:cli": "bun run --watch packages/cli/src/index.tsx",
+    "dev:server": "bun run --hot packages/server/src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "hono": "^4.12.23"
   }
 }
