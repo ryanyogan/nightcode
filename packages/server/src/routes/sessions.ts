@@ -57,69 +57,69 @@ const createSessionValidator = zValidator(
   },
 );
 
-const app = new Hono();
+const app = new Hono()
 
-app.get("/", (c) => {
-  const result = sessions.map(({ id, title, createdAt }) => ({
-    id,
-    title,
-    createdAt,
-  }));
+  .get("/", (c) => {
+    const result = sessions.map(({ id, title, createdAt }) => ({
+      id,
+      title,
+      createdAt,
+    }));
 
-  return c.json(result);
-});
+    return c.json(result);
+  })
 
-app.get("/:id", async (c) => {
-  // await new Promise((resolve) => setTimeout(resolve, 5_000));
+  .get("/:id", async (c) => {
+    // await new Promise((resolve) => setTimeout(resolve, 5_000));
 
-  // throw new HTTPException(
-  //   500,
-  //   { message: "Mock Error!!!"}
-  // )
-  const id = c.req.param("id");
-  const session = sessions.find((session) => session.id === id);
+    // throw new HTTPException(
+    //   500,
+    //   { message: "Mock Error!!!"}
+    // )
+    const id = c.req.param("id");
+    const session = sessions.find((session) => session.id === id);
 
-  if (!session) {
-    return c.json({ error: "Session not found" }, 404);
-  }
+    if (!session) {
+      return c.json({ error: "Session not found" }, 404);
+    }
 
-  return c.json(session);
-});
+    return c.json(session);
+  })
 
-app.post("/", createSessionValidator, async (c) => {
-  const { initialMessage, ...data } = c.req.valid("json");
+  .post("/", createSessionValidator, async (c) => {
+    const { initialMessage, ...data } = c.req.valid("json");
 
-  const id = String(nextId++);
-  const now = new Date().toISOString();
+    const id = String(nextId++);
+    const now = new Date().toISOString();
 
-  const messages: MockMessage[] = [];
-  if (initialMessage) {
-    messages.push({
-      id: String(nextId++),
-      role: initialMessage.role,
-      content: initialMessage.content,
-      mode: initialMessage.mode,
-      model: initialMessage.model,
-      status: "COMPLETE",
-      parts: null,
-      duration: null,
+    const messages: MockMessage[] = [];
+    if (initialMessage) {
+      messages.push({
+        id: String(nextId++),
+        role: initialMessage.role,
+        content: initialMessage.content,
+        mode: initialMessage.mode,
+        model: initialMessage.model,
+        status: "COMPLETE",
+        parts: null,
+        duration: null,
+        createdAt: now,
+        sessionId: id,
+      });
+    }
+
+    const session: MockSession = {
+      id,
+      title: data.title,
+      cwd: data.cwd ?? null,
+      userId: "mock-user",
       createdAt: now,
-      sessionId: id,
-    });
-  }
+      messages,
+    };
 
-  const session: MockSession = {
-    id,
-    title: data.title,
-    cwd: data.cwd ?? null,
-    userId: "mock-user",
-    createdAt: now,
-    messages,
-  };
+    sessions.push(session);
 
-  sessions.push(session);
+    return c.json(session, 201);
+  });
 
-  return c.json(session, 201);
-});
-
-export { app as sessions };
+export default app;
