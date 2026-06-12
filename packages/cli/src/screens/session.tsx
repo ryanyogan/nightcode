@@ -58,8 +58,10 @@ export function Session() {
         const res = await apiClient.sessions[":id"].$get({
           param: { id },
         });
+
         if (ignore) return;
         if (!res.ok) throw new Error(await getErrorMessage(res));
+
         setSession(await res.json());
       } catch (error) {
         toast.show({
