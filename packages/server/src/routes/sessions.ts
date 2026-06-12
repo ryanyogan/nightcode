@@ -1,42 +1,18 @@
 import { zValidator } from "@hono/zod-validator";
+import { db, MessageStatus } from "@nightcode/database";
+import { Mode, Role } from "@nightcode/database/enums";
 import { findSupportedChatModel } from "@nightcode/shared";
 import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 import z from "zod";
-
-type MockMessage = {
-  id: string;
-  role: string;
-  content: string;
-  mode: string;
-  model: string;
-  status: string;
-  parts: null;
-  duration: null;
-  createdAt: string;
-  sessionId: string;
-};
-
-type MockSession = {
-  id: string;
-  title: string;
-  cwd: string | null;
-  userId: string;
-  createdAt: string;
-  messages: MockMessage[];
-};
-
-const sessions: MockSession[] = [];
-let nextId = 1;
 
 const createSessionSchema = z.object({
   title: z.string(),
   cwd: z.string().optional(),
   initialMessage: z
     .object({
-      role: z.string(),
+      role: z.enum(Role),
       content: z.string(),
-      mode: z.string(),
+      mode: z.enum(Mode),
       model: z
         .string()
         .refine(
@@ -59,25 +35,31 @@ const createSessionValidator = zValidator(
 
 const app = new Hono()
 
-  .get("/", (c) => {
-    const result = sessions.map(({ id, title, createdAt }) => ({
-      id,
-      title,
-      createdAt,
-    }));
+  .get("/", async (c) => {
+    const session = await db.session.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+      },
+    });
 
-    return c.json(result);
+    return c.json(session);
   })
 
   .get("/:id", async (c) => {
-    // await new Promise((resolve) => setTimeout(resolve, 5_000));
-
-    // throw new HTTPException(
-    //   500,
-    //   { message: "Mock Error!!!"}
-    // )
     const id = c.req.param("id");
-    const session = sessions.find((session) => session.id === id);
+    const session = await db.session.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        messsages: {
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
 
     if (!session) {
       return c.json({ error: "Session not found" }, 404);
@@ -89,35 +71,21 @@ const app = new Hono()
   .post("/", createSessionValidator, async (c) => {
     const { initialMessage, ...data } = c.req.valid("json");
 
-    const id = String(nextId++);
-    const now = new Date().toISOString();
-
-    const messages: MockMessage[] = [];
-    if (initialMessage) {
-      messages.push({
-        id: String(nextId++),
-        role: initialMessage.role,
-        content: initialMessage.content,
-        mode: initialMessage.mode,
-        model: initialMessage.model,
-        status: "COMPLETE",
-        parts: null,
-        duration: null,
-        createdAt: now,
-        sessionId: id,
-      });
-    }
-
-    const session: MockSession = {
-      id,
-      title: data.title,
-      cwd: data.cwd ?? null,
-      userId: "mock-user",
-      createdAt: now,
-      messages,
-    };
-
-    sessions.push(session);
+    const session = await db.session.create({
+      data: {
+        ...data,
+        userId: "mock-user",
+        ...(initialMessage && {
+          messsages: {
+            create: {
+              ...initialMessage,
+              status: MessageStatus.COMPLETE,
+            },
+          },
+        }),
+      },
+      include: { messsages: true },
+    });
 
     return c.json(session, 201);
   });

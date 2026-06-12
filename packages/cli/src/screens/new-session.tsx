@@ -72,26 +72,20 @@ export function NewSession() {
         navigate("/", { replace: true });
       }
 
-      createSession();
-
-      return () => {
-        ignore = true;
-      };
     };
-  }, []);
 
-  if (!state?.message) return null;
+    createSession();
+
+    return () => {
+      ignore = true;
+    };
+  }, [state, navigate, toast]);
+
+  if (!state) return null;
 
   return (
     <SessionShell onSubmit={() => {}} inputDisabled loading>
       <UserMessage message={state.message} />
-
-      <BotMessage
-        content="This is a sample bot response to demonstrate the message layout."
-        model="opus-4-6"
-      />
-
-      <ErrorMessage message="This is a sample error message" />
     </SessionShell>
   );
 }
