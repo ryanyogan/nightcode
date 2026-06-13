@@ -9,9 +9,12 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.84",
+    "@ai-sdk/openai": "^3.0.71",
     "@hono/zod-validator": "^0.8.0",
     "@nightcode/database": "workspace:*",
     "@nightcode/shared": "workspace:*",
+    "ai": "^6.0.204",
     "dotenv": "^17.4.2",
     "hono": "^4.12.23",
     "zod": "^4.4.3"
