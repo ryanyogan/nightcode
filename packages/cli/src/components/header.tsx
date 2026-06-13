@@ -7,8 +7,8 @@ export function Header() {
         gap={0.5}
         alignItems="center"
       >
-        <ascii-font font="block" text="EX" color="orange" />
-        <ascii-font font="block" text="Code" />
+        <ascii-font font="tiny" text="The" color="orange" />
+        <ascii-font font="tiny" text="Pickle" />
       </box>
     </box>
   );
