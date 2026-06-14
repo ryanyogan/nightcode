@@ -8,6 +8,12 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useEffect } from "hono/jsx";
 import { getErrorMessage } from "../lib/http-errors";
 import { useToast } from "../providers/toast";
+import prettyMs from "pretty-ms";
+import {
+  DEFAULT_CHAT_MODEL_ID,
+  type SupportedChatModelId,
+} from "@nightcode/shared";
+import { useChat, type Message } from "../hooks/use-chat";
 
 type SessionData = InferResponseType<
   (typeof apiClient.sessions)[":id"]["$get"],
@@ -20,16 +26,79 @@ const sessionLocationSchema = z.object({
   ),
 });
 
-function ChatMessage({ msg }: { msg: SessionData["messsages"][number] }) {
-  if (msg.role === "USER") {
+function mapDBMessages(dbMessages: SessionData["messsages"]): Message[] {
+  return dbMessages.map((m): Message => {
+    if (m.role === "ERROR") {
+      return { id: m.id, role: "error", content: m.content };
+    }
+
+    if (m.role === "USER") {
+      return {
+        id: m.id,
+        role: "user",
+        content: m.content,
+        mode: m.mode,
+        model: m.model as SupportedChatModelId,
+      };
+    }
+
+    return {
+      id: m.id,
+      role: "assistant",
+      content: m.content,
+      mode: m.mode,
+      model: m.model as SupportedChatModelId,
+      parts: [{ type: "text", text: m.content }],
+      ...(m.duration && { duration: prettyMs(m.duration * 1000) }),
+    };
+  });
+}
+
+function ChatMessage({ msg }: { msg: Message }) {
+  if (msg.role === "user") {
     return <UserMessage message={msg.content} />;
   }
 
-  if (msg.role === "ERROR") {
+  if (msg.role === "error") {
     return <ErrorMessage message={msg.content} />;
   }
 
-  return <BotMessage content={msg.content} model={msg.model} />;
+  return (
+    <BotMessage
+      parts={msg.parts}
+      model={msg.model}
+      mode={msg.mode}
+      duration={msg.duration}
+      streaming={false}
+    />
+  );
+}
+
+function SessionChat({ session }: { session: SessionData }) {
+  const [initialMessages] = useState(() => mapDBMessages(session.messsages));
+  const { messages, streaming, submit, abort } = useChat(
+    session.id,
+    initialMessages,
+  );
+
+  useEffect(() => {
+    return () => {
+      abort();
+    };
+  }, [abort]);
+
+  return (
+    <SessionShell
+      onSubmit={(text) =>
+        submit({ userText: text, mode: "BUILD", model: DEFAULT_CHAT_MODEL_ID })
+      }
+      loading={streaming.status === "streaming"}
+    >
+      {messages.map((msg) => (
+        <ChatMessage key={msg.id} msg={msg} />
+      ))}
+    </SessionShell>
+  );
 }
 
 export function Session() {
@@ -85,11 +154,5 @@ export function Session() {
     return <SessionShell onSubmit={() => {}} inputDisabled loading />;
   }
 
-  return (
-    <SessionShell onSubmit={() => {}} inputDisabled>
-      {session.messsages.map((msg) => (
-        <ChatMessage key={msg.id} msg={msg} />
-      ))}
-    </SessionShell>
-  );
+  return <SessionChat session={session} />;
 }
