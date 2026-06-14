@@ -36,7 +36,7 @@ export function useCommandMenu(): UseCommandMenuReturn {
   };
 
   const handleContentChange = (text: string) => {
-    setTextValue("");
+    setTextValue(text);
     setSelectedIndex(0);
 
     const scrollbox = scrollRef.current;
