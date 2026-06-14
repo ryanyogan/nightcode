@@ -4,11 +4,11 @@ export function Header() {
       <box
         flexDirection="row"
         justifyContent="center"
-        gap={0.5}
+        gap={1}
         alignItems="center"
       >
-        <ascii-font font="tiny" text="bIG" color="orange" />
-        <ascii-font font="tiny" text="Pickle" />
+        <ascii-font font="tiny" text="pickle" color="orange" />
+        <ascii-font font="tiny" text="code" />
       </box>
     </box>
   );

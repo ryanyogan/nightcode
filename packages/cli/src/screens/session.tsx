@@ -14,6 +14,9 @@ import {
   type SupportedChatModelId,
 } from "@nightcode/shared";
 import { useChat, type Message } from "../hooks/use-chat";
+import { MessageStatus } from "@nightcode/database";
+import { useKeyboardLayer } from "../providers/keyboard-layer";
+import { useKeyboard } from "@opentui/react";
 
 type SessionData = InferResponseType<
   (typeof apiClient.sessions)[":id"]["$get"],
@@ -50,6 +53,7 @@ function mapDBMessages(dbMessages: SessionData["messsages"]): Message[] {
       model: m.model as SupportedChatModelId,
       parts: [{ type: "text", text: m.content }],
       ...(m.duration && { duration: prettyMs(m.duration * 1000) }),
+      interrupted: m.status === MessageStatus.INTERRUPTED,
     };
   });
 }
@@ -70,13 +74,15 @@ function ChatMessage({ msg }: { msg: Message }) {
       mode={msg.mode}
       duration={msg.duration}
       streaming={false}
+      interrupted={msg.interrupted}
     />
   );
 }
 
 function SessionChat({ session }: { session: SessionData }) {
   const [initialMessages] = useState(() => mapDBMessages(session.messsages));
-  const { messages, streaming, submit, abort } = useChat(
+  const { isTopLayer } = useKeyboardLayer();
+  const { messages, streaming, submit, abort, interrupt } = useChat(
     session.id,
     initialMessages,
   );
@@ -87,12 +93,24 @@ function SessionChat({ session }: { session: SessionData }) {
     };
   }, [abort]);
 
+  useKeyboard((key) => {
+    if (
+      key.name === "escape" &&
+      isTopLayer("base") &&
+      streaming.status === "streaming"
+    ) {
+      key.preventDefault();
+      interrupt();
+    }
+  });
+
   return (
     <SessionShell
       onSubmit={(text) =>
         submit({ userText: text, mode: "BUILD", model: DEFAULT_CHAT_MODEL_ID })
       }
       loading={streaming.status === "streaming"}
+      interruptible={streaming.status === "streaming"}
     >
       {messages.map((msg) => (
         <ChatMessage key={msg.id} msg={msg} />
@@ -154,5 +172,5 @@ export function Session() {
     return <SessionShell onSubmit={() => {}} inputDisabled loading />;
   }
 
-  return <SessionChat session={session} />;
+  return <SessionChat key={session.id} session={session} />;
 }
