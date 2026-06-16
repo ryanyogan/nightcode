@@ -4,7 +4,7 @@ import {
   type SupportedChatModelId,
 } from "@nightcode/shared";
 import type { ClientResponse } from "hono/client";
-import { use, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getErrorMessage } from "../lib/http-errors";
 import { EventSourceParserStream } from "eventsource-parser/stream";
 import prettyMs from "pretty-ms";
@@ -216,6 +216,10 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
                 parts: [...parts],
               },
             ]);
+
+            // Retire the live bubble in the same tick as the append so the
+            // finished message and the streaming bubble never overlap a frame.
+            clearStream(activeStream.requestId);
             break;
           }
 
@@ -233,7 +237,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
         }
       }
     },
-    [updateMessages, emitParts, isActiveRequest],
+    [updateMessages, emitParts, isActiveRequest, clearStream],
   );
 
   const runStream = useCallback(
@@ -255,7 +259,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
         const response = await request(controller);
         await handleStream(response, activeStream);
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AvortError") {
+        if (err instanceof DOMException && err.name === "AbortError") {
           return;
         }
 

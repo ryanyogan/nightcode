@@ -114,6 +114,15 @@ function SessionChat({ session }: { session: SessionData }) {
       {messages.map((msg) => (
         <ChatMessage key={msg.id} msg={msg} />
       ))}
+
+      {streaming.status === "streaming" && (
+        <BotMessage
+          parts={streaming.parts}
+          model={streaming.model}
+          mode={streaming.mode}
+          streaming
+        />
+      )}
     </SessionShell>
   );
 }

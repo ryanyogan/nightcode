@@ -2,7 +2,6 @@ import { Mode } from "@nightcode/database/enums";
 import type { ClientMessagePart } from "../../hooks/use-chat";
 import { useTheme } from "../../providers/theme";
 import { TextAttributes } from "@opentui/core";
-import { UNSAFE_decodeViaTurboStream } from "react-router";
 
 type Props = {
   parts: ClientMessagePart[];
